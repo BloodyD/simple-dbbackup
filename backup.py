@@ -1,16 +1,16 @@
 import argparse, sys, re, tempfile
 
-from configparser import ConfigParser
+from configparser import RawConfigParser
 from pysftp import Connection
 
 from subprocess import Popen
 from os.path import basename, join
 from datetime import datetime
 
-class Config(ConfigParser):
+class Config(RawConfigParser):
 
   def __init__(self, config_file):
-    ConfigParser.__init__(self)
+    RawConfigParser.__init__(self)
     self.readfp(config_file)
 
 
@@ -60,8 +60,9 @@ def do_backup(sftp, config):
     dbname = config.get("MySQL", KEYS.DB_NAME),
     )
   print("\tRunning: {}".format(command.replace(config.get("MySQL", KEYS.PWD), "******")))
+  
 
-  process = Popen(command, stdout = backup)
+  process = Popen(command.split(), stdout = backup)
   process.wait()
 
   fmt = config.get("General", KEYS.FMT)
@@ -76,9 +77,8 @@ def do_backup(sftp, config):
   sftp.putfo(backup, backup_path)
 
 def delete_old_backups(sftp, backups):
-  return
   for backuppath in backups:
-    self.sftp.remove(backuppath)
+    sftp.remove(backuppath)
 
 
 
